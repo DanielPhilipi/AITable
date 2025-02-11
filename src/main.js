@@ -1,43 +1,42 @@
-import fs from 'fs';
-import path from 'path';
-import PdfParse from 'pdf-parse';
+import { vetoriza } from "./utils/vetorizaTermo.js";
 
-import { divideDocumento } from "./utils/dividirDocumento";
-import { enviaDocumento } from "./service/conexaoAPI";
 
 // Função principal
-async function processaDocumento(arquivo) {
+async function processaTermo(termo) {
+    let retornoAPI = ""
+    let termoVetorizado = "";
+    const termosVetorizados = [];
+    // Vetoriza o termo recebido 
     try {
-        // Lê o arquivo PDF
-        const pdfData = fs.readFileSync(arquivo);
-        const pdf = await PdfParse(pdfData);
-        const Texto = pdf.text;
-
-        // Divide o texto em seções
-        const secoes = divideDocumento(Texto);
-
-        // Define o comando
-        const comando = ["Retorne a tebela de pacotes. Apenas com as informações contidas na tabela. Se não encontrar, procure pela tabela de procedimentos."];
-
-        // Processa cada seção
-        const results = [];
-        const response = await enviaDocumento(Texto, comando);
-        results.push({ secao, comando, response });
- /*       
-        for (const secao of secoes) {
-            const response = await enviaDocumento(secao, comando);
-            results.push({ secao, comando, response });
-        }
-*/
-        // Salva os resultados
-        const retornoAPI = path.join(__dirname, "../output/respostas.json");
-        fs.writeFileSync(retornoAPI, JSON.stringify(results, null, 2));
-        console.log("Processamento concluído. Resultados salvos em:", retornoAPI);
+        termoVetorizado = await vetoriza(termo);
+        console.log("Termo vetorizado: " + termoVetorizado.slice(0,100))
     } catch (error) {
-        console.error("Erro durante o processamento:", error.message);
+        console.log("Erro ao tentar vetorizar o termo recebido: " + error.message);
     }
+/*
+    // Compara o vetor do termo com a base
+    try {
+        const vetores = vetorComparador(termoVetorizado);
+        if (vetores.length === 0) {
+            throw new Error("Não há vetores similares ao enviado");
+        }
+        termosVetorizados.push(vetores);
+    } catch (error) {
+        console.log("Não foi possível comparar o termo vetorizado com outros vetores: " + error.message)
+    }
+    // Compara os termos com a IA
+    try {
+        retornoAPI = contratoComparador(termo, termosVetorizados)
+    } catch (error) {
+        console.log("Não foi possível comparar o termo com a base contratual: " + error.message)
+    }
+    // Salva os resultados
+    console.log("Processamento concluído. Resultados:", retornoAPI);*/
 }
 
 // Executa o processamento
-const arquivo = path.join(__dirname, "../data/contrato.pdf");
-processaDocumento(arquivo);
+try {
+    processaTermo("Balão");
+} catch (error) {
+    console.log(error.message);
+}

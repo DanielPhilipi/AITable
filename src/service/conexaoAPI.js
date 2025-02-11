@@ -1,19 +1,22 @@
 const axios = require("axios");
+import { BedrockEmbeddings } from "@langchain/aws";
 
 // Função para enviar uma parte do documento para a API
-async function enviaDocumento(secao, comando) {
+async function comparaIA(termo, base) {
     const apiUrl = process.env.AWS_URL_API;
     const apiKey = process.env.AWS_ACCESS_KEY;
     try {
         const response = await axios.post(
             apiUrl,
             {
-                text: secao,
-                comando
+                comando: `Analise o termo "${termo}" em comparação com a base de dados abaixo: 
+                "${base}" 
+                Devolva o item da base que mais se assemelha com o termo enviado.
+                Devolva apenas o item da base.`
             },
             {
-                headers:{
-                    "Content-Type":"application/json",
+                headers: {
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${apiKey}`
                 }
             }
@@ -25,4 +28,4 @@ async function enviaDocumento(secao, comando) {
     }
 }
 
-export default { enviaDocumento };
+export default { comparaIA };
